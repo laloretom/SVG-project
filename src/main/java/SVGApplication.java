@@ -49,8 +49,8 @@ public class SVGApplication extends javax.swing.JFrame {
 
     private javax.swing.JMenu shapeMenu;
     private javax.swing.JMenuItem lineMenuItem;
-
-    Document svgDoc = null;
+    private javax.swing.JMenuItem circleMenuItem;
+    private javax.swing.JMenuItem rectMenuItem;
 
 
     public SVGApplication() {
@@ -78,7 +78,8 @@ public class SVGApplication extends javax.swing.JFrame {
 
         shapeMenu = new javax.swing.JMenu();
         lineMenuItem = new javax.swing.JMenuItem();
-
+        circleMenuItem = new javax.swing.JMenuItem();
+        rectMenuItem = new javax.swing.JMenuItem();
 
         scaleMenuItem = new javax.swing.JMenuItem();
         rotateMenuItem = new javax.swing.JMenuItem();
@@ -87,7 +88,6 @@ public class SVGApplication extends javax.swing.JFrame {
         operMenu = new javax.swing.JMenu();
 
         menuBar.add(operMenu);
-
 
         helpMenu = new javax.swing.JMenu();
         contentMenuItem = new javax.swing.JMenuItem();
@@ -175,6 +175,22 @@ public class SVGApplication extends javax.swing.JFrame {
         });
         shapeMenu.add(lineMenuItem);
 
+        circleMenuItem.setText("Circle");
+        circleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                circleMenuItemMenuItemActionPerformed(evt);
+            }
+        });
+        shapeMenu.add(circleMenuItem);
+
+        rectMenuItem.setText("Rectangle");
+        rectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rectMenuItemMenuItemActionPerformed(evt);
+            }
+        });
+        shapeMenu.add(rectMenuItem);
+
         menuBar.add(shapeMenu);
         //  --- End shape menu
 
@@ -231,7 +247,6 @@ public class SVGApplication extends javax.swing.JFrame {
         pack();
     }
 
-
     private void newMenuItemActionPerformed(ActionEvent evt)  {
         String name = JOptionPane.showInputDialog("Name: ");
         System.out.println(name);
@@ -269,6 +284,26 @@ public class SVGApplication extends javax.swing.JFrame {
         Document doc = documentFrame.getDocument();
 
         NewLine dialog = new NewLine(SVGApplication.this, doc);
+        dialog.setVisible(true);
+
+        documentFrame.repaint();
+    }
+
+    private void circleMenuItemMenuItemActionPerformed(ActionEvent evt) {
+        DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
+        Document doc = documentFrame.getDocument();
+
+        NewCircle dialog = new NewCircle(SVGApplication.this, doc);
+        dialog.setVisible(true);
+
+        documentFrame.repaint();
+    }
+
+    private void rectMenuItemMenuItemActionPerformed(ActionEvent evt) {
+        DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
+        Document doc = documentFrame.getDocument();
+
+        NewRectangle dialog = new NewRectangle(SVGApplication.this, doc);
         dialog.setVisible(true);
 
         documentFrame.repaint();
