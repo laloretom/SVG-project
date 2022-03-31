@@ -233,47 +233,44 @@ public class SVGApplication extends javax.swing.JFrame {
 
 
     private void newMenuItemActionPerformed(ActionEvent evt)  {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        Document doc = null;
+        String name = JOptionPane.showInputDialog("Name: ");
+        System.out.println(name);
 
-        try {
-            DocumentBuilder builder = dbf.newDocumentBuilder();
+        if(!name.isEmpty()){
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            Document doc = null;
 
-            doc = builder.newDocument();
-            Element root = doc.createElement("svg");
+            try {
+                DocumentBuilder builder = dbf.newDocumentBuilder();
 
-            doc.appendChild(root);
-            root.setAttribute("width", "640");
-            root.setAttribute("height", "480");
-            root.setAttribute("xmlns", "http://www.w3.org/2000/svg");;
-            doc.getDocumentElement().normalize();
+                doc = builder.newDocument();
+                Element root = doc.createElement("svg");
 
-        } catch (ParserConfigurationException e) {
-            LOG.severe(e.getMessage());
-            doc = null;
+                doc.appendChild(root);
+                root.setAttribute("width", "640");
+                root.setAttribute("height", "480");
+                root.setAttribute("xmlns", "http://www.w3.org/2000/svg");;
+                doc.getDocumentElement().normalize();
+
+            } catch (ParserConfigurationException e) {
+                LOG.severe(e.getMessage());
+                doc = null;
+            }
+
+            DocumentFrame intFrame = new DocumentFrame(name, doc);
+            desktopPane.add(intFrame);
+            intFrame.setVisible(true);
         }
-
-        DocumentFrame intFrame = new DocumentFrame("new SVG",doc);
-        desktopPane.add(intFrame);
-        intFrame.setVisible(true);
 
     }
 
     private void lineMenuItemMenuItemActionPerformed(ActionEvent evt) {
         DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
-
         Document doc = documentFrame.getDocument();
-        Element root = doc.getDocumentElement();
-        System.out.println(root);
 
-        Element line = doc.createElement("line");
-        line.setAttribute("stroke","#fff555");
-        line.setAttribute("stroke-width","3");
-        line.setAttribute("x1","45");
-        line.setAttribute("x2","244");
-        line.setAttribute("y1","200");
-        line.setAttribute("y2","200");
-        root.appendChild(line);
+        NewLine dialog = new NewLine(SVGApplication.this, doc);
+        dialog.setVisible(true);
+
         documentFrame.repaint();
     }
 
@@ -397,6 +394,7 @@ public class SVGApplication extends javax.swing.JFrame {
                Dimension d = documentFrame.getPreferredSize();
                d.height = (int) (d.height * scaleFactor);
                d.width  = (int) (d.width * scaleFactor);
+
                documentFrame.setSize( d );
            }
             documentFrame.repaint();
