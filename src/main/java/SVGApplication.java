@@ -119,6 +119,11 @@ public class SVGApplication extends javax.swing.JFrame {
 
         saveMenuItem.setMnemonic('s');
         saveMenuItem.setText("Save");
+        saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuItemActionPerformed(evt);
+            }
+        });
         fileMenu.add(saveMenuItem);
 
         saveAsMenuItem.setMnemonic('a');
@@ -247,43 +252,48 @@ public class SVGApplication extends javax.swing.JFrame {
         pack();
     }
 
+
     private void newMenuItemActionPerformed(ActionEvent evt)  {
-        String name = JOptionPane.showInputDialog("Name: ");
-        System.out.println(name);
+        String sw = JOptionPane.showInputDialog("Width: ");
+        String sh = JOptionPane.showInputDialog("Height: ");
 
-        if(!name.isEmpty()){
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document doc = null;
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Document doc = null;
 
-            try {
-                DocumentBuilder builder = dbf.newDocumentBuilder();
+        try {
+            DocumentBuilder builder = dbf.newDocumentBuilder();
+            doc = builder.newDocument();
+            Element root = doc.createElement("svg");
 
-                doc = builder.newDocument();
-                Element root = doc.createElement("svg");
+            doc.appendChild(root);
+            root.setAttribute("width", sw);
+            root.setAttribute("height", sh);
+            root.setAttribute("xmlns", "http://www.w3.org/2000/svg");;
+            doc.getDocumentElement().normalize();
 
-                doc.appendChild(root);
-                root.setAttribute("width", "640");
-                root.setAttribute("height", "480");
-                root.setAttribute("xmlns", "http://www.w3.org/2000/svg");;
-                doc.getDocumentElement().normalize();
+        } catch (ParserConfigurationException e) {
+            LOG.severe(e.getMessage());
+            doc = null;
+        }
 
-            } catch (ParserConfigurationException e) {
-                LOG.severe(e.getMessage());
-                doc = null;
-            }
-
-            DocumentFrame intFrame = new DocumentFrame(name, doc);
+            DocumentFrame intFrame = new DocumentFrame("New SVG", doc);
             desktopPane.add(intFrame);
             intFrame.setVisible(true);
-        }
+
 
     }
 
     private void lineMenuItemMenuItemActionPerformed(ActionEvent evt) {
         DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
+
+        if( documentFrame == null ) {
+            return;
+        }
+
         Document doc = documentFrame.getDocument();
 
         NewLine dialog = new NewLine(SVGApplication.this, doc);
+
         dialog.setVisible(true);
 
         documentFrame.repaint();
@@ -291,9 +301,15 @@ public class SVGApplication extends javax.swing.JFrame {
 
     private void circleMenuItemMenuItemActionPerformed(ActionEvent evt) {
         DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
+
+        if( documentFrame == null ) {
+            return;
+        }
+
         Document doc = documentFrame.getDocument();
 
         NewCircle dialog = new NewCircle(SVGApplication.this, doc);
+
         dialog.setVisible(true);
 
         documentFrame.repaint();
@@ -301,12 +317,124 @@ public class SVGApplication extends javax.swing.JFrame {
 
     private void rectMenuItemMenuItemActionPerformed(ActionEvent evt) {
         DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
+
+        if( documentFrame == null ) {
+            return;
+        }
+
         Document doc = documentFrame.getDocument();
 
         NewRectangle dialog = new NewRectangle(SVGApplication.this, doc);
+
         dialog.setVisible(true);
 
         documentFrame.repaint();
+    }
+
+    private void saveMenuItemActionPerformed(ActionEvent evt) {
+        DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
+
+        if( documentFrame == null ) {
+            return;
+        }
+
+        Document document = documentFrame.getDocument();
+
+        //String name = desktopPane.getSelectedFrame().getTitle();
+
+        if (document.getDocumentURI() == null){
+            final JFileChooser fc = new JFileChooser();
+
+            String userDir = System.getProperty("user.dir");
+
+            fc.setCurrentDirectory(new File(userDir));
+
+            // Abrir dialogo para seleccion de archivo
+            fc.setDialogTitle("Seleccionar Imagen SVG");
+            fc.setAcceptAllFileFilterUsed(false);
+
+            // Mostrar unicamente archivos SVG
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos SVG", "svg");
+            fc.addChoosableFileFilter(filter);
+
+            int returnVal = fc.showSaveDialog(this);
+
+            if( returnVal == JFileChooser.APPROVE_OPTION ) {
+                // Obtener archivo seleccionado
+                File newFile = fc.getSelectedFile();
+                if (newFile == null) {
+                    return;
+                }
+                if (!newFile.getName().toLowerCase().endsWith(".svg")) {
+                    newFile = new File(newFile.getParentFile(), newFile.getName() + ".svg");
+                }
+
+                if( newFile.exists() ) {
+                    LOG.info("El archivo ya existe.");
+
+                    int input = JOptionPane.showConfirmDialog(
+                            this,
+                            "El archivo:\n"
+                                    + newFile.getName()
+                                    + "\nRemplazar el archivo?",
+                            "Archivo ya existe",
+                            JOptionPane.YES_NO_OPTION);
+                    if( input != JOptionPane.YES_OPTION ) {
+                        return;
+                    }
+                }
+
+                Util.saveDocument(document, newFile.toString());
+                LOG.info( newFile.toString() );
+
+                desktopPane.getSelectedFrame().dispose();
+
+                // Con el archivo seleccionado, crear un documento DOM
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = null;
+                try {
+                    dBuilder = dbFactory.newDocumentBuilder();
+                } catch (ParserConfigurationException ex) {
+                    LOG.severe(ex.getMessage());
+                }
+
+                Document doc = null;
+
+                try {
+                    doc = dBuilder.parse(newFile);
+                    doc.getDocumentElement().normalize();
+
+                } catch (SAXException ex) {
+                    LOG.severe(ex.getMessage());
+                } catch (IOException ex) {
+                    LOG.severe(ex.getMessage());
+                }
+
+                DocumentFrame intFrame = new DocumentFrame(newFile.getName(),doc);
+                desktopPane.add(intFrame);
+                intFrame.setVisible(true);
+
+            }
+        }else{
+            File file = new File(document.getDocumentURI().replaceAll("file:/",""));
+            if(file.exists()){
+                LOG.info("El archivo ya existe.");
+                int input = JOptionPane.showConfirmDialog(
+                        this,
+                        "El archivo:\n"
+                                + file.getName()
+                                + "\nRemplazar el archivo?",
+                        "Archivo ya existe",
+                        JOptionPane.YES_NO_OPTION);
+                if (input != JOptionPane.YES_OPTION) {
+                    return;
+                }
+                Util.saveDocument(document, file.toString());
+            }
+        }
+
+
+
     }
 
     private void saveAsMenuItemActionPerformed(ActionEvent evt) {
@@ -362,11 +490,11 @@ public class SVGApplication extends javax.swing.JFrame {
             Util.saveDocument(document, file.toString());
             LOG.info( file.toString() );
 
-
         }
     }
 
     private void rotateMenuItemMenuItemActionPerformed(ActionEvent evt) {
+
         Object[] options = {"15", "30", "45", "60","75", "90"};
 
         String s = (String) JOptionPane.showInputDialog(
@@ -378,6 +506,7 @@ public class SVGApplication extends javax.swing.JFrame {
                 options,
                 "15");
         if ((s != null) && (s.length() > 0)) {
+
             double angulo = Double.parseDouble(s);
             DocumentFrame documentFrame =  (DocumentFrame) desktopPane.getSelectedFrame();
 
@@ -385,9 +514,9 @@ public class SVGApplication extends javax.swing.JFrame {
                 System.out.println( documentFrame.getTitle() );
 
                 Util.rotateSVG(documentFrame.getDocument(), angulo);
-
+                documentFrame.repaint();
             }
-            documentFrame.repaint();
+
         }
     }
 
@@ -431,8 +560,9 @@ public class SVGApplication extends javax.swing.JFrame {
                d.width  = (int) (d.width * scaleFactor);
 
                documentFrame.setSize( d );
+               documentFrame.repaint();
            }
-            documentFrame.repaint();
+
         }
     }
 
