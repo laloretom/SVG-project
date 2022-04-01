@@ -10,29 +10,37 @@ import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 public class NewLine extends JDialog {
+    public static final String CLASS_NAME = NewLine.class.getSimpleName();
+    public static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+    private Properties webColors;
+    private Document doc;
 
+    private JPanel controlsPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextField xField1;
-    private JTextField yField1;
-    private JTextField xField2;
-    private JTextField yField2;
-    private JPanel controlsPanel;
     private JLabel x1Label;
+    private JTextField yField1;
     private JLabel y1Label;
+    private JTextField xField2;
     private JLabel x2Label;
+    private JTextField yField2;
     private JLabel y2Label;
     private JComboBox<String> ccombo;
+    private JLabel colorLabel;
     private JComboBox<String> wcombo;
-    private Document doc;
+    private JLabel widthLabel;
 
     public NewLine(JFrame parent, Document document) {
-
         super(parent,"New line",true);
+
+        loadColors();
+        String colors[] = webColors.stringPropertyNames().toArray(new String[0]);
 
         doc = document;
 
@@ -64,14 +72,13 @@ public class NewLine extends JDialog {
         yField2=new JTextField(4);
         controlsPanel.add(yField2);
 
-        JLabel colorLabel = new JLabel("Color:");
+        colorLabel = new JLabel("Color:");
         colorLabel.setHorizontalAlignment(SwingConstants.CENTER);
         controlsPanel.add(colorLabel);
-        String colors[] = {"black", "red", "green", "blue", "yellow", "white","cyan","magenta"};
         ccombo = new JComboBox<>(colors);
         controlsPanel.add(ccombo);
 
-        JLabel widthLabel = new JLabel("Width:");
+        widthLabel = new JLabel("Width:");
         widthLabel.setHorizontalAlignment(SwingConstants.CENTER);
         controlsPanel.add(widthLabel);
         String ws[] = {"1", "2", "3", "4", "5", "6","7","8"};
@@ -115,16 +122,15 @@ public class NewLine extends JDialog {
         String sy1 = yField1.getText() ;
         String sx2 = xField2.getText();
         String sy2 = yField2.getText();
+        String color = (String) ccombo.getSelectedItem();
+        String width = (String) wcombo.getSelectedItem();
 
         Element line = doc.createElement("line");
         line.setAttribute("x1",sx1);
         line.setAttribute("y1",sy1);
         line.setAttribute("x2",sx2);
         line.setAttribute("y2",sy2);
-
-        String color = (String) ccombo.getSelectedItem();
         line.setAttribute("stroke",color);
-        String width = (String) wcombo.getSelectedItem();
         line.setAttribute("stroke-width",width);
         Element root = doc.getDocumentElement();
         root.appendChild(line);
@@ -135,6 +141,22 @@ public class NewLine extends JDialog {
     private void onCancel() {
         // add your code here if necessary
         dispose();
+    }
+
+    private void loadColors() {
+        try {
+
+            String userDir = System.getProperty("user.dir");
+            FileReader reader = new FileReader(userDir + "/colors.properties");
+
+            webColors = new Properties();
+            webColors.load(reader);
+
+        } catch (FileNotFoundException ex) {
+            LOGGER.severe(ex.getMessage());
+        } catch (IOException ex) {
+            LOGGER.severe(ex.getMessage());
+        }
     }
 
 }
