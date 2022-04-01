@@ -17,28 +17,21 @@ public class NewCircle extends JDialog {
     public static final String CLASS_NAME = NewCircle.class.getSimpleName();
     public static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
     private Properties webColors;
+    private Document doc;
 
     private JPanel controlsPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
-
     private JTextField cxField;
     private JLabel cxLabel;
-
     private JTextField cyField;
     private JLabel cyLabel;
-
     private JTextField rField;
     private JLabel rLabel;
-
-    private Document doc;
-
     private JComboBox<String> ccombo;
     private JLabel colorLabel;
-
     private JComboBox<String> fccombo;
     private JLabel colorFillLabel;
-
     private JComboBox<String> wcombo;
     private JLabel widthLabel;
 
@@ -49,6 +42,7 @@ public class NewCircle extends JDialog {
         String colors[] = webColors.stringPropertyNames().toArray(new String[0]);
 
         doc = document;
+
         GridLayout layout = new GridLayout(0,2);
 
         controlsPanel = new JPanel(layout);
@@ -65,7 +59,7 @@ public class NewCircle extends JDialog {
         cyField =new JTextField(4);
         controlsPanel.add(cyField);
 
-        rLabel = new JLabel("Width:");
+        rLabel = new JLabel("R:");
         rLabel.setHorizontalAlignment(SwingConstants.CENTER);
         controlsPanel.add(rLabel);
         rField =new JTextField(4);
